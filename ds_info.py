@@ -37,7 +37,7 @@ RANDOM_WAIT_TIME = 5
 
 ds_name_pattern = re.compile(r"\b\w+?\d-\w+?\d{0,4}\b", re.IGNORECASE)
 comment_line_pattern = re.compile(r"^\s*?[#/][^\n]+$", re.IGNORECASE)
-sw_pattern = re.compile(r'\bTiMOS-\S+R\d+? ', re.IGNORECASE)
+sw_pattern = re.compile(r'\b(TiMOS-\S+R\d+?)\s', re.IGNORECASE)
 primary_bof_image_pattern = re.compile(r'primary-image\s+?(\S+)\b', re.IGNORECASE)
 both_file_pattern = re.compile(r'\.tim', re.IGNORECASE)
 alarm_pattern = re.compile(r'\d+?\s+?\d{4}/\d{2}/\d{2}\s+?\d', re.IGNORECASE)
@@ -130,25 +130,18 @@ def get_node_info(node,
                 return post_result(queue_result, node, TEMPORARY, None)
         time.sleep(FAIL_CONNECTION_WAIT_INTERVALS[tray])
 
-    print "Primary BOF file [{0}]".format(get_primary_bof_file(connection))
-    print "File version result [{0}]".format(execute_command(connection, 'file version {0}'.format(get_primary_bof_file(connection))))
-    print "Detected BOF version [{0}]".format(extract(sw_pattern, execute_command(connection, 'file version {0}'.format(get_primary_bof_file(connection)))))
-
     info = {}
     for info_iter in COMMANDS:
-        print "Tray {0}".format(COMMANDS[info_iter][HEADER])
         try:
             info[COMMANDS[info_iter][HEADER]] = COMMANDS[info_iter][getter](connection)
-            print "Result is:{0}".format(info[COMMANDS[info_iter][HEADER]])
         except IOError:
             info[COMMANDS[info_iter][HEADER]] = ""
-    print "Info: " + str(info)
     return post_result(queue_result, node, COMPLETE, info)
 
 if __name__ == "__main__":
     parser = optparse.OptionParser(description='Get info about ds.',
                                    usage="usage: %prog [options] -f <DS list file> | ds ds ds ...",
-                                   version="v 1.0.39")
+                                   version="v 1.0.11")
     parser.add_option("-f", "--file", dest="ds_list_file_name",
                       help="file with DS list, line started with # or / will be dropped", metavar="FILE")
     parser.add_option("-n", "--no-thread", dest="no_threads",
@@ -237,7 +230,7 @@ if __name__ == "__main__":
             result[FATAL].append(ds_name)
 
         header_text = "|" + cell_format.format("DS name") + "|"
-        for column in [sorted(COMMANDS)]:
+        for column in sorted(COMMANDS):
             header_text += " " + cell_format.format(COMMANDS[column][HEADER]) + " |"
         header_top = "=" * len(header_text)
         separator_line = "+" + "-" * (len(header_text)-2) + "+"
@@ -246,13 +239,13 @@ if __name__ == "__main__":
         print header_text
         print separator_line
 
-        print "Result is: " + str(result)
-        for node in result[PAYLOAD]:
-            result_line = "|" + cell_format.format(node)
-            for info in sorted(result[PAYLOAD][node]):
-                result_line += "|" + cell_format.format(result[PAYLOAD][node][info])
-            print result_line + "|"
-            print separator_line
+        if PAYLOAD in result:
+            for node in result[PAYLOAD]:
+                result_line = "|" + cell_format.format(node)
+                for info in sorted(result[PAYLOAD][node]):
+                    result_line += "|" + cell_format.format(result[PAYLOAD][node][info])
+                print result_line + "|"
+                print separator_line
 
         line_complete, line_temporary, line_fatal = '', '', ''
 
