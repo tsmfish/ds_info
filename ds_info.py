@@ -131,13 +131,13 @@ def get_node_info(node,
         time.sleep(FAIL_CONNECTION_WAIT_INTERVALS[tray])
 
     info = {}
-    for info_iter in COMMANDS.values():
-        print "Tray {0}".format(info_iter[TYPE])
+    for info_iter in COMMANDS:
+        print "Tray {0}".format(COMMANDS[info_iter][HEADER])
         try:
-            info[info_iter[TYPE]] = info_iter[getter](connection)
-            print "Result is:{0}".format(info[info_iter[TYPE]])
+            info[COMMANDS[info_iter][HEADER]] = COMMANDS[info_iter][getter](connection)
+            print "Result is:{0}".format(info[COMMANDS[info_iter][HEADER]])
         except IOError:
-            info[info_iter[TYPE]] = ""
+            info[COMMANDS[info_iter][HEADER]] = ""
     print info
     return post_result(queue_result, node, COMPLETE, info)
 
