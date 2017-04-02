@@ -69,7 +69,7 @@ COMMANDS = {
         getter: lambda connection: extract(sw_pattern, execute_command(connection, 'file version {0}'.format(get_primary_bof_file(connection))))
     },
     ALARMS: {
-        HEADER: 'alarms present',
+        HEADER: 'alarms',
         getter: lambda connection: ('absent', 'present')[is_contains(alarm_pattern, execute_command(connection, 'show system alarms'))]
     },
 }
@@ -145,7 +145,7 @@ def get_node_info(node,
 if __name__ == "__main__":
     parser = optparse.OptionParser(description='Get info about ds.',
                                    usage="usage: %prog [options] -f <DS list file> | ds ds ds ...",
-                                   version="v 1.0.18")
+                                   version="v 1.0.19")
     parser.add_option("-f", "--file", dest="ds_list_file_name",
                       help="file with DS list, line started with # or / will be dropped", metavar="FILE")
     parser.add_option("-n", "--no-thread", dest="no_threads",
