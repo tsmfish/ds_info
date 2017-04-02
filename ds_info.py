@@ -102,8 +102,9 @@ def get_node_info(node,
                   user,
                   password,
                   queue_result):
-
+    ds_print("", "command running", None, None, None, None, True)
     time.sleep(RANDOM_WAIT_TIME * random.random())
+    ds_print("", "command running", None, None, None, None, True)
 
     # Create object
     parameters = {
@@ -131,14 +132,15 @@ def get_node_info(node,
             if tray == RETRY_CONNECTION_LIMIT - 1:
                 return post_result(queue_result, node, TEMPORARY, None)
         time.sleep(FAIL_CONNECTION_WAIT_INTERVALS[tray])
+        ds_print("", "command running", None, None, None, None, True)
 
     info = {}
     for info_iter in COMMANDS:
+        ds_print("", "command running", None, None, None, None, True)
         try:
             info[info_iter] = COMMANDS[info_iter][getter](connection)
         except IOError:
             info[info_iter] = ""
-        ds_print("", "command running", None, None, None, None, True)
 
     return post_result(queue_result, node, COMPLETE, info)
 
