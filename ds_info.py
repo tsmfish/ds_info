@@ -233,8 +233,8 @@ if __name__ == "__main__":
             result[FATAL].append(ds_name)
 
         header_text = "|"
-        for column in COMMANDS:
-            header_text += " " + cell_format.format(column) + " |"
+        for column in ["DS name" + sorted(COMMANDS)]:
+            header_text += " " + cell_format.format(COMMANDS[column][HEADER]) + " |"
         header_top = "=" * len(header_text)
         separator_line = "+" + "-" * (len(header_text)-2) + "+"
 
@@ -245,8 +245,8 @@ if __name__ == "__main__":
         print "Result is: " + str(result)
         for node in result[PAYLOAD]:
             result_line = "|" + cell_format.format(node)
-            for info in result[PAYLOAD][node]:
-                result_line += "|" + cell_format.format(info)
+            for info in sorted(result[PAYLOAD][node]):
+                result_line += "|" + cell_format.format(result[PAYLOAD][node][info])
             print result_line + "|"
             print separator_line
 
