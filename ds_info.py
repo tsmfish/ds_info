@@ -130,6 +130,10 @@ def get_node_info(node,
                 return post_result(queue_result, node, TEMPORARY, None)
         time.sleep(FAIL_CONNECTION_WAIT_INTERVALS[tray])
 
+    print "Primary BOF file [{0}]".format(get_primary_bof_file(connection))
+    print "File version result [{0}]".format(execute_command(connection, 'file version {0}'.format(get_primary_bof_file(connection))))
+    print "Detected BOF version [{0}]".format(extract(sw_pattern, execute_command(connection, 'file version {0}'.format(get_primary_bof_file(connection)))))
+
     info = {}
     for info_iter in COMMANDS:
         print "Tray {0}".format(COMMANDS[info_iter][HEADER])
@@ -233,7 +237,7 @@ if __name__ == "__main__":
             result[FATAL].append(ds_name)
 
         header_text = "|"
-        for column in ["DS name" + sorted(COMMANDS)]:
+        for column in ["DS name", sorted(COMMANDS)]:
             header_text += " " + cell_format.format(COMMANDS[column][HEADER]) + " |"
         header_top = "=" * len(header_text)
         separator_line = "+" + "-" * (len(header_text)-2) + "+"
