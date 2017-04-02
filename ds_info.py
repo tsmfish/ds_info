@@ -245,7 +245,7 @@ if __name__ == "__main__":
         print header_separator_line
 
         if PAYLOAD in result:
-            for node in result[PAYLOAD]:
+            for node in sorted(result[PAYLOAD], ds_compare):
                 result_line = "|" + cell_format.format(node)
                 for info in COLUMNS:
                     result_line += "|" + cell_format.format(result[PAYLOAD][node][info])

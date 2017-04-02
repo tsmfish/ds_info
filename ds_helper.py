@@ -1,13 +1,13 @@
 import os
 import re
-from threading import Lock
+from threading import RLock
 
 print_message_format = "> {0} < : {1}"
 progress_message_format = "action {action} on {host} progress {progress}"
-__progress_char_set = ['\\', '+', '|', 'x', '/', '+', '-', 'x']
-__progress_index = 0
-__progress_visible = False
-__progress_lock = Lock()
+progress_char_set = ['\\', '+', '|', 'x', '/', '+', '-', 'x']
+progress_index = 0
+progress_lock = RLock()
+progress_visible = False
 
 
 class COLORS(object):
@@ -133,22 +133,31 @@ def ds_print(host, message, print_lock=None, log_file_name=None, host_color=None
         except:
             pass
 
+    global progress_lock
     try:
-        __progress_lock.acquire()
-    except:
-        pass
+        progress_lock.acquire()
+    except Exception as e:
+        print(str(e))
 
-    if __progress_visible:
-        print COLORS.cursor_up_line + COLORS.cursor_up_line + COLORS.clear_line
-        __progress_visible = False
+    global progress_visible
 
+    if progress_visible:
+        print COLORS.cursor_up_line + COLORS.clear_line + COLORS.cursor_up_line
+        progress_visible = False
+
+    global progress_index
     if progress:
-        print print_message_format.format(action=colored_message, host=colored_host, progress=__progress_char_set[__progress_index])
+        print progress_message_format.format(action=colored_message, host=colored_host, progress=progress_char_set[progress_index])
 
-        __progress_visible = True
-        __progress_index = (__progress_index + 1) % len(__progress_char_set)
+        progress_visible = True
+        progress_index = (progress_index + 1) % len(progress_char_set)
     else:
         print print_message_format.format(colored_host, colored_message)
+
+    try:
+        progress_lock.release()
+    except Exception as e:
+        print(str(e))
 
     try:
         print_lock.release()
