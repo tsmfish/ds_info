@@ -131,9 +131,11 @@ def get_node_info(node,
         time.sleep(FAIL_CONNECTION_WAIT_INTERVALS[tray])
 
     info = {}
-    for info_iter in COMMANDS:
+    for info_iter in COMMANDS.values():
+        print "Tray {0}".format(info_iter[TYPE])
         try:
             info[info_iter[TYPE]] = info_iter[getter](connection)
+            print "Result is:{0}".format(info[info_iter[TYPE]])
         except IOError:
             info[info_iter[TYPE]] = ""
     print info
@@ -198,6 +200,7 @@ if __name__ == "__main__":
                                   result_queue)
                 except Exception as e:
                     post_result(result_queue, ds_name, FATAL, None)
+                    print str(e)
         else:
             for ds_name in result[TEMPORARY]:
                 thread = threading.Thread(target=get_node_info, name=ds_name, args=(ds_name,
