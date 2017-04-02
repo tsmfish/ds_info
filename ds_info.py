@@ -37,7 +37,7 @@ RANDOM_WAIT_TIME = 5
 
 ds_name_pattern = re.compile(r"\b\w+?\d-\w+?\d{0,4}\b", re.IGNORECASE)
 comment_line_pattern = re.compile(r"^\s*?[#/][^\n]+$", re.IGNORECASE)
-sw_pattern = re.compile(r'\bTiMOS-\S+', re.IGNORECASE)
+sw_pattern = re.compile(r'\bTiMOS-\S+R\d+? ', re.IGNORECASE)
 primary_bof_image_pattern = re.compile(r'primary-image\s+?(\S+)\b', re.IGNORECASE)
 both_file_pattern = re.compile(r'both\.tim', re.IGNORECASE)
 alarm_pattern = re.compile(r'\d+?\s+?\d{4}/\d{2}/\d{2}\s+?\d', re.IGNORECASE)
@@ -185,7 +185,7 @@ if __name__ == "__main__":
     print COLORS.info+"Start running: {0}".format(time.strftime("%H:%M:%S"))+COLORS.end
     start_time = time.time()
 
-    result = {COMPLETE: list(), FATAL: list(), TEMPORARY: ds_list, PAYLOAD: list()}
+    result = {COMPLETE: list(), FATAL: list(), TEMPORARY: ds_list, PAYLOAD: {}}
     RANDOM_WAIT_TIME = len(ds_list)/2
 
     while result[TEMPORARY]:
