@@ -40,7 +40,7 @@ comment_line_pattern = re.compile(r"^\s*?[#/][^\n]+$", re.IGNORECASE)
 sw_pattern = re.compile(r'\bTiMOS-\S+', re.IGNORECASE)
 primary_bof_image_pattern = re.compile(r'primary-image\s+?(\S+)\b', re.IGNORECASE)
 both_file_pattern = re.compile(r'both\.tim', re.IGNORECASE)
-alarms_absent_pattern= re.compile(r'No Matching Entries', re.IGNORECASE)
+alarm_pattern = re.compile(r'\d+?\s+?\d{4}/\d{2}/\d{2}\s+?\d', re.IGNORECASE)
 
 
 TYPE, \
@@ -70,7 +70,7 @@ COMMANDS = {
     },
     ALARMS: {
         HEADER: 'alarms present',
-        getter: lambda connection: ('present', 'absent')[is_contains(alarms_absent_pattern, execute_command(connection, 'show system alarms'))]
+        getter: lambda connection: ('absent', 'present')[is_contains(alarm_pattern, execute_command(connection, 'show system alarms'))]
     },
 }
 
@@ -138,7 +138,7 @@ def get_node_info(node,
             print "Result is:{0}".format(info[COMMANDS[info_iter][HEADER]])
         except IOError:
             info[COMMANDS[info_iter][HEADER]] = ""
-    print info
+    print "Info: " + str(info)
     return post_result(queue_result, node, COMPLETE, info)
 
 if __name__ == "__main__":
@@ -185,7 +185,7 @@ if __name__ == "__main__":
     print COLORS.info+"Start running: {0}".format(time.strftime("%H:%M:%S"))+COLORS.end
     start_time = time.time()
 
-    result = {COMPLETE: list(), FATAL: list(), TEMPORARY: ds_list}
+    result = {COMPLETE: list(), FATAL: list(), TEMPORARY: ds_list, PAYLOAD: list()}
     RANDOM_WAIT_TIME = len(ds_list)/2
 
     while result[TEMPORARY]:
@@ -242,7 +242,7 @@ if __name__ == "__main__":
         print header_text
         print separator_line
 
-        print result
+        print "Result is: " + str(result)
         for node in result[PAYLOAD]:
             result_line = "|" + cell_format.format(node)
             for info in result[PAYLOAD][node]:
