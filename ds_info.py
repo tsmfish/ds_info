@@ -74,6 +74,8 @@ COMMANDS = {
     },
 }
 
+COLUMNS = [TYPE, SW_VERSION, BOF_VERSION, BOOT_VERSION, ALARMS]
+
 
 def get_primary_bof_file(connection):
     primary_bof_conf = extract(primary_bof_image_pattern, connection.send_command('show bof'))
@@ -230,8 +232,8 @@ if __name__ == "__main__":
             result[FATAL].append(ds_name)
 
         header_text = "|" + cell_format.format("DS name") + "|"
-        for column in sorted(COMMANDS):
-            header_text += " " + cell_format.format(COMMANDS[column][HEADER]) + " |"
+        for column in COLUMNS:
+            header_text += cell_format.format(COMMANDS[column][HEADER]) + "|"
         header_top = "=" * len(header_text)
         separator_line = "+" + "-" * (len(header_text)-2) + "+"
 
@@ -242,7 +244,7 @@ if __name__ == "__main__":
         if PAYLOAD in result:
             for node in result[PAYLOAD]:
                 result_line = "|" + cell_format.format(node)
-                for info in sorted(result[PAYLOAD][node]):
+                for info in COLUMNS:
                     result_line += "|" + cell_format.format(result[PAYLOAD][node][info])
                 print result_line + "|"
                 print separator_line
