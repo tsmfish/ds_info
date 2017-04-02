@@ -27,11 +27,12 @@ log_file_format = "%y%m%d_%H%M%S_{ds_name}.log"
 cell_format = "{0:^15}"
 
 COMPLETE, FATAL, TEMPORARY = 'complete', 'fatal', 'temporary'
-NAME, RESULT, PAYLOAD = 'name', 'result', 'printouts', 'payload'
+NAME, RESULT, PAYLOAD = 'name', 'result', 'payload'
 
 
-RETRY_CONNECTION_LIMIT = 5
-FAIL_CONNECTION_WAIT_INTERVALS = [2, 3, 3, 7, 9, 13, 17, 25, 39]
+RETRY_CONNECTION_LIMIT = 7
+FAIL_CONNECTION_WAIT_INTERVALS = [3,5,9,17,29,37,47,51]
+
 RANDOM_WAIT_TIME = 5
 
 ds_name_pattern = re.compile(r"\b\w+?\d-\w+?\d{0,4}\b", re.IGNORECASE)
@@ -135,7 +136,7 @@ def get_node_info(node,
             info[info_iter[TYPE]] = info_iter[getter](connection)
         except IOError:
             info[info_iter[TYPE]] = ""
-
+    print info
     return post_result(queue_result, node, COMPLETE, info)
 
 if __name__ == "__main__":
@@ -183,6 +184,7 @@ if __name__ == "__main__":
     start_time = time.time()
 
     result = {COMPLETE: list(), FATAL: list(), TEMPORARY: ds_list}
+    RANDOM_WAIT_TIME = len(ds_list)/2
 
     while result[TEMPORARY]:
         result_queue, threads = Queue(), list()
@@ -227,7 +229,6 @@ if __name__ == "__main__":
         for ds_name in unhandled_ds:
             result[FATAL].append(ds_name)
 
-        # TODO print table result
         header_text = "|"
         for column in COMMANDS:
             header_text += " " + cell_format.format(column) + " |"
@@ -238,6 +239,7 @@ if __name__ == "__main__":
         print header_text
         print separator_line
 
+        print result
         for node in result[PAYLOAD]:
             result_line = "|" + cell_format.format(node)
             for info in result[PAYLOAD][node]:
