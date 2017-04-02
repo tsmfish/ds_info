@@ -24,7 +24,7 @@ from netmiko import ConnectHandler, NetMikoTimeoutException, NetMikoAuthenticati
 
 
 log_file_format = "%y%m%d_%H%M%S_{ds_name}.log"
-cell_format = "{0:^15}"
+cell_format = "{0:^16}"
 
 COMPLETE, FATAL, TEMPORARY = 'complete', 'fatal', 'temporary'
 NAME, RESULT, PAYLOAD = 'name', 'result', 'payload'
@@ -232,10 +232,11 @@ if __name__ == "__main__":
             result[FATAL].append(ds_name)
 
         header_text = "|" + cell_format.format("DS name") + "|"
+        separator_line = "+" + "-" * (len(cell_format.format(" "))-1) + "+"
         for column in COLUMNS:
             header_text += cell_format.format(COMMANDS[column][HEADER]) + "|"
+            separator_line += "-" * (len(cell_format.format(" "))-1) + "+"
         header_top = "=" * len(header_text)
-        separator_line = "+" + "-" * (len(header_text)-2) + "+"
 
         print header_top
         print header_text
