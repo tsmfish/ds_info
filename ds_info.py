@@ -138,12 +138,14 @@ def get_node_info(node,
             info[info_iter] = COMMANDS[info_iter][getter](connection)
         except IOError:
             info[info_iter] = ""
+        ds_print("", "command running", None, None, None, None, True)
+
     return post_result(queue_result, node, COMPLETE, info)
 
 if __name__ == "__main__":
     parser = optparse.OptionParser(description='Get info about ds.',
                                    usage="usage: %prog [options] -f <DS list file> | ds ds ds ...",
-                                   version="v 1.0.16")
+                                   version="v 1.0.18")
     parser.add_option("-f", "--file", dest="ds_list_file_name",
                       help="file with DS list, line started with # or / will be dropped", metavar="FILE")
     parser.add_option("-n", "--no-thread", dest="no_threads",
