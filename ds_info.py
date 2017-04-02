@@ -143,7 +143,7 @@ def get_node_info(node,
 if __name__ == "__main__":
     parser = optparse.OptionParser(description='Get info about ds.',
                                    usage="usage: %prog [options] -f <DS list file> | ds ds ds ...",
-                                   version="v 1.0.15")
+                                   version="v 1.0.16")
     parser.add_option("-f", "--file", dest="ds_list_file_name",
                       help="file with DS list, line started with # or / will be dropped", metavar="FILE")
     parser.add_option("-n", "--no-thread", dest="no_threads",
@@ -233,14 +233,16 @@ if __name__ == "__main__":
 
         header_text = "|" + cell_format.format("DS name") + "|"
         separator_line = "+" + "-" * (len(cell_format.format(" "))) + "+"
+        header_separator_line = "+" + "=" * (len(cell_format.format(" "))) + "+"
         for column in COLUMNS:
             header_text += cell_format.format(COMMANDS[column][HEADER]) + "|"
             separator_line += "-" * (len(cell_format.format(" "))) + "+"
+            header_separator_line += "=" * (len(cell_format.format(" "))) + "+"
         header_top = "=" * len(header_text)
 
         print header_top
         print header_text
-        print separator_line
+        print header_separator_line
 
         if PAYLOAD in result:
             for node in result[PAYLOAD]:
