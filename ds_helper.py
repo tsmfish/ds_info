@@ -133,24 +133,28 @@ def ds_print(host, message, print_lock=None, log_file_name=None, host_color=None
         except:
             pass
 
-    if __progress_visible: print COLORS.cursor_up_line + COLORS.cursor_up_line + COLORS.clear_line
+    try:
+        __progress_lock.acquire()
+    except:
+        pass
+
+    if __progress_visible:
+        print COLORS.cursor_up_line + COLORS.cursor_up_line + COLORS.clear_line
+        __progress_visible = False
 
     if progress:
-        __progress_lock.acquire()
-
         print print_message_format.format(action=colored_message, host=colored_host, progress=__progress_char_set[__progress_index])
 
         __progress_visible = True
         __progress_index = (__progress_index + 1) % len(__progress_char_set)
-        __progress_lock.release()
     else:
         print print_message_format.format(colored_host, colored_message)
 
-    if print_lock:
-        try:
-            print_lock.release()
-        except:
-            pass
+    try:
+        print_lock.release()
+    except:
+        pass
+
     if log_file_name:
         try:
             with open(log_file_name, 'a+') as log_file:

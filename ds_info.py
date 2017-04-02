@@ -24,7 +24,7 @@ from netmiko import ConnectHandler, NetMikoTimeoutException, NetMikoAuthenticati
 
 
 log_file_format = "%y%m%d_%H%M%S_{ds_name}.log"
-
+cell_format = "{0:^15}"
 
 COMPLETE, FATAL, TEMPORARY = 'complete', 'fatal', 'temporary'
 NAME, RESULT, PAYLOAD = 'name', 'result', 'printouts', 'payload'
@@ -39,9 +39,15 @@ comment_line_pattern = re.compile(r"^\s*?[#/][^\n]+$", re.IGNORECASE)
 sw_pattern = re.compile(r'\bTiMOS-\S+', re.IGNORECASE)
 primary_bof_image_pattern = re.compile(r'primary-image\s+?(\S+)\b', re.IGNORECASE)
 both_file_pattern = re.compile(r'both\.tim', re.IGNORECASE)
+alarms_absent_pattern= re.compile(r'No Matching Entries', re.IGNORECASE)
 
 
-TYPE, SW_VERSION, BOOT_VERSION, BOF_VERSION, NAME = 'type', 'sw version', 'boot.tim version', 'primary bof version', 'name'
+TYPE, \
+    SW_VERSION, \
+    BOOT_VERSION, \
+    BOF_VERSION, \
+    NAME, \
+    ALARMS = 'type', 'sw version', 'boot.tim version', 'primary bof version', 'name', 'alarms'
 HEADER, getter = 'header', 'getter'
 
 COMMANDS = {
@@ -50,16 +56,20 @@ COMMANDS = {
         getter: lambda connection: extract(re.compile(r'\bSAS-[XM]\b', re.IGNORECASE), execute_command(connection, 'show version'))
     },
     SW_VERSION: {
-        HEADER: 'DS SW version',
+        HEADER: 'DS SW ver.',
         getter: lambda connection: extract(sw_pattern, execute_command(connection, 'show version'))
     },
     BOOT_VERSION: {
-        HEADER: 'boot.tim version',
+        HEADER: 'boot.tim ver.',
         getter: lambda connection: extract(sw_pattern, execute_command(connection, 'file version boot.tim'))
     },
     BOF_VERSION: {
-        HEADER: 'Primary BOF version',
+        HEADER: 'BOF ver.',
         getter: lambda connection: extract(sw_pattern, execute_command(connection, 'file version {0}'.format(get_primary_bof_file(connection))))
+    },
+    ALARMS: {
+        HEADER: 'alarms present',
+        getter: lambda connection: ('present', 'absent')[is_contains(alarms_absent_pattern, execute_command(connection, 'show system alarms'))]
     },
 }
 
@@ -129,8 +139,8 @@ def get_node_info(node,
     return post_result(queue_result, node, COMPLETE, info)
 
 if __name__ == "__main__":
-    parser = optparse.OptionParser(description='Command execute.',
-                                   usage="usage: %prog [options] -f <DS list file> | ds ds ds ... -c command",
+    parser = optparse.OptionParser(description='Get info about ds.',
+                                   usage="usage: %prog [options] -f <DS list file> | ds ds ds ...",
                                    version="v 1.0.39")
     parser.add_option("-f", "--file", dest="ds_list_file_name",
                       help="file with DS list, line started with # or / will be dropped", metavar="FILE")
@@ -183,7 +193,7 @@ if __name__ == "__main__":
                     get_node_info(ds_name,
                                   user,
                                   secret,
-                                  )
+                                  result_queue)
                 except Exception as e:
                     post_result(result_queue, ds_name, FATAL, None)
         else:
@@ -216,6 +226,24 @@ if __name__ == "__main__":
 
         for ds_name in unhandled_ds:
             result[FATAL].append(ds_name)
+
+        # TODO print table result
+        header_text = "|"
+        for column in COMMANDS:
+            header_text += " " + cell_format.format(column) + " |"
+        header_top = "=" * len(header_text)
+        separator_line = "+" + "-" * (len(header_text)-2) + "+"
+
+        print header_top
+        print header_text
+        print separator_line
+
+        for node in result[PAYLOAD]:
+            result_line = "|" + cell_format.format(node)
+            for info in result[PAYLOAD][node]:
+                result_line += "|" + cell_format.format(info)
+            print result_line + "|"
+            print separator_line
 
         line_complete, line_temporary, line_fatal = '', '', ''
 
