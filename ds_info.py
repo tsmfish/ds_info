@@ -135,9 +135,9 @@ def get_node_info(node,
     info = {}
     for info_iter in COMMANDS:
         try:
-            info[COMMANDS[info_iter][HEADER]] = COMMANDS[info_iter][getter](connection)
+            info[info_iter] = COMMANDS[info_iter][getter](connection)
         except IOError:
-            info[COMMANDS[info_iter][HEADER]] = ""
+            info[info_iter] = ""
     return post_result(queue_result, node, COMPLETE, info)
 
 if __name__ == "__main__":
