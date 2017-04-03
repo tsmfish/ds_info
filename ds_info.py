@@ -11,7 +11,7 @@ import re
 from Queue import Queue
 
 
-from ds_helper import COLORS, ds_print, extract, is_contains, ds_compare
+from ds_helper import COLORS, ds_print, extract, is_contains, ds_compare, utilise_progress
 
 import sys
 sys.path.insert(1, '/home/erkki/.local/lib/python2.6/site-packages/ecdsa-0.13-py2.6.egg/')
@@ -201,7 +201,9 @@ if __name__ == "__main__":
                                   user,
                                   secret,
                                   result_queue)
+                    utilise_progress()
                 except Exception as e:
+                    utilise_progress()
                     post_result(result_queue, ds_name, FATAL, None)
                     print str(e)
         else:
@@ -215,6 +217,7 @@ if __name__ == "__main__":
 
             for thread in threads:
                 thread.join()
+            utilise_progress()
 
         result[TEMPORARY] = list()
 
@@ -244,7 +247,6 @@ if __name__ == "__main__":
             header_separator_line += "=" * (len(cell_format.format(" "))) + "+"
         header_top = "=" * len(header_text)
 
-        ds_print("", "")
         print header_top
         print header_text
         print header_separator_line

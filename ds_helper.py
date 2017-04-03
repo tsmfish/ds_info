@@ -7,7 +7,7 @@ progress_message_format = "action {action} on {host} progress {progress}"
 progress_char_set = ['\\', '+', '|', 'x', '/', '+', '-', 'x']
 progress_index = 0
 progress_lock = RLock()
-progress_visible = False
+progress_visible = 0
 
 
 class COLORS(object):
@@ -94,19 +94,21 @@ __ds_host_name_parse = re.compile(r'\b([A-Z]+?\d+?-[A-Z]{3})(\d+?)\b', re.IGNORE
 def ds_print(host, message, print_lock=None, log_file_name=None, host_color=None, message_color=None, progress=None):
     """
     Print colored message with formatted header
-    
+
     :param host:
     :type host: str
     :param message:
     :type message: str
     :param print_lock:
     :type print_lock: Lock()
-    :param log_file_name: 
+    :param log_file_name:
     :type log_file_name: str
-    :param host_color: 
+    :param host_color:
     :type host_color: COLORS
-    :param message_color: 
+    :param message_color:
     :type message_color: COLORS
+    :param progress:
+    :type progress: bool
     :return: None
     """
 
@@ -130,20 +132,18 @@ def ds_print(host, message, print_lock=None, log_file_name=None, host_color=None
     if print_lock:
         try:
             print_lock.acquire()
-        except:
+        except Exception as e:
             pass
 
     global progress_lock
     try:
         progress_lock.acquire()
     except Exception as e:
-        print(str(e))
+        pass
 
     global progress_visible
 
-    if progress_visible:
-        print COLORS.cursor_up_line + COLORS.clear_line + COLORS.cursor_up_line
-        progress_visible = False
+    utilise_progress(True)
 
     global progress_index
     if progress:
@@ -159,10 +159,11 @@ def ds_print(host, message, print_lock=None, log_file_name=None, host_color=None
     except Exception as e:
         print(str(e))
 
-    try:
-        print_lock.release()
-    except:
-        pass
+    if print_lock:
+        try:
+            print_lock.release()
+        except Exception as e:
+            print(str(e))
 
     if log_file_name:
         try:
@@ -175,7 +176,7 @@ def ds_print(host, message, print_lock=None, log_file_name=None, host_color=None
 
 def is_contains(regexp, text):
     """
-    Check that {text} contains {regexp} 
+    Check that {text} contains {regexp}
 
     :param regexp:
     :type regexp: str
@@ -208,12 +209,12 @@ def extract(regexp, text):
 
 def ds_compare(left, right):
     """
-    
+
     :param left: switch name
-    :type left: str 
+    :type left: str
     :param right: switch name
     :type right: str
-    :return: -1 / 0 / 1 according compare 
+    :return: -1 / 0 / 1 according compare
     """
     __parser = re.compile(r'([a-z]+?)(\d+?)-([a-z]+?)(\d+)', re.IGNORECASE)
     try:
@@ -241,3 +242,24 @@ def get_terminal_dimension():
         return os.popen('stty size', 'r').read().split()
     except:
         return 0, 0
+
+
+def utilise_progress(without_lock=False):
+    global progress_lock
+    if not without_lock:
+        try:
+            progress_lock.acquire()
+        except Exception as e:
+            pass
+
+    global progress_visible
+
+    if progress_visible:
+        print COLORS.cursor_up_line + COLORS.clear_line + COLORS.cursor_up_line
+        progress_visible = False
+
+    if not without_lock:
+        try:
+            progress_lock.release()
+        except Exception as e:
+            pass
